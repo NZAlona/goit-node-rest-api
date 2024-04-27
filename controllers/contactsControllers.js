@@ -1,6 +1,6 @@
 import contactsService from "../services/contactsServices.js";
 import HttpError from "../helpers/HttpError.js";
-import validateBody from "../helpers/validateBody.js";
+import { updateContactSchema } from "../schemas/contactsSchemas.js";
 import { createContactSchema } from "../schemas/contactsSchemas.js";
 
 export const getAllContacts = async (req, res, next) => {
@@ -59,4 +59,35 @@ export const createContact = async (req, res, next) => {
   }
 };
 
-export const updateContact = async (req, res) => {};
+export const updateContact = async (req, res, next) => {
+  try {
+    const { name, email, phone } = req.body;
+
+    if (!name && !email && !phone) {
+      return res
+        .status(400)
+        .json({ message: "Body must have at least one field" });
+    }
+
+    const { error } = updateContactSchema.validate({ name, email, phone });
+    if (error) {
+      throw HttpError(400, "Not Found");
+    }
+
+    const { id } = req.params;
+
+    const updatedContact = await contactsService.updateById(id, {
+      name,
+      email,
+      phone,
+    });
+
+    if (!updatedContact) {
+      throw HttpError(404, "Not Found such contact");
+    }
+
+    res.json(updatedContact);
+  } catch (error) {
+    next(error);
+  }
+};

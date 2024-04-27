@@ -2,14 +2,25 @@ import Joi from "joi";
 
 export const createContactSchema = Joi.object({
   name: Joi.string().min(3).max(30).required(),
-  email: Joi.string().email({
-    minDomainSegments: 2,
-    tlds: { allow: ["com", "net", "ru"] },
-  }),
+  email: Joi.string()
+    .email({
+      minDomainSegments: 2,
+      tlds: { allow: ["com", "net", "ru", "uk"] },
+    })
+    .required(),
   phone: Joi.string()
     .length(10)
-    .pattern(/^[0-9]+$/)
+    .pattern(/^\d{3}-?\d{3}-?\d{2}$|^\d{10}$/)
     .required(),
 });
 
-export const updateContactSchema = Joi.object({});
+export const updateContactSchema = Joi.object({
+  name: Joi.string().min(3).max(30),
+  email: Joi.string().email({
+    minDomainSegments: 2,
+    tlds: { allow: ["com", "net", "ru", "uk"] },
+  }),
+  phone: Joi.string()
+    .length(10)
+    .pattern(/^\d{3}-?\d{3}-?\d{2}$|^\d{10}$/),
+});

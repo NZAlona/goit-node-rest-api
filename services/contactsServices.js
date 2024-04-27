@@ -1,6 +1,7 @@
 import * as fs from "node:fs/promises";
 import path from "node:path";
 import crypto from "node:crypto";
+import { stringify } from "node:querystring";
 
 const contactsPath = path.resolve("db", "contacts.json");
 // This path.resolve() method accepts string as a sequence of paths into an absolute path
@@ -63,9 +64,21 @@ async function addContact(name, email, phone) {
   return newContact;
 }
 
+async function updateById(id, data) {
+  const contacts = await listContacts();
+  const index = contacts.findIndex((contact) => contact.id === id);
+  if (index === -1) {
+    return null;
+  }
+  contacts[index] = { id, ...data };
+  await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
+  return contacts[index];
+}
+
 export default {
   listContacts,
   addContact,
   removeContact,
   getContactById,
+  updateById,
 };
