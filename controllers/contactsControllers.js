@@ -1,7 +1,5 @@
 import contactsService from "../services/contactsServices.js";
 import HttpError from "../helpers/HttpError.js";
-import { updateContactSchema } from "../schemas/contactsSchemas.js";
-import { createContactSchema } from "../schemas/contactsSchemas.js";
 
 export const getAllContacts = async (req, res, next) => {
   try {
@@ -48,11 +46,13 @@ export const deleteContact = async (req, res, next) => {
 export const createContact = async (req, res, next) => {
   try {
     const { name, email, phone } = req.body;
-    const { error } = createContactSchema.validate({ name, email, phone });
-    if (error) {
-      throw HttpError(400, error.message);
-    }
-    const createdContact = await contactsService.addContact(name, phone, email);
+
+    //created middleware and invoke it(in routes) before controller createdContact is invoked
+    // const { error } = createContactSchema.validate({ name, email, phone });
+    // if (error) {
+    //   throw HttpError(400, error.message);
+    // }
+    const createdContact = await contactsService.addContact(name, email, phone);
     res.status(201).json(createdContact);
   } catch (error) {
     next(error);
@@ -69,10 +69,10 @@ export const updateContact = async (req, res, next) => {
         .json({ message: "Body must have at least one field" });
     }
 
-    const { error } = updateContactSchema.validate({ name, email, phone });
-    if (error) {
-      throw HttpError(400, "Not Found");
-    }
+    // const { error } = updateContactSchema.validate({ name, email, phone });
+    // if (error) {
+    //   throw HttpError(400, "Not Found");
+    // }
 
     const { id } = req.params;
 
