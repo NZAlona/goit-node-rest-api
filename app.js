@@ -6,6 +6,7 @@ import mongoose from "mongoose";
 import "dotenv/config";
 
 const { DB_HOST } = process.env;
+// process.env enables to see what Environmental variables are available when an applaication was initiated
 // process.env is a global variable which is added during runtime by Node,js to show the state of environment an application was initiated - it requires to install dotenv/config
 
 const app = express();
