@@ -3,11 +3,6 @@ import morgan from "morgan";
 import cors from "cors";
 import contactsRouter from "./routes/contactsRouter.js";
 
-import mongoose from "mongoose";
-
-const DB_HOST =
-  "mongodb+srv://alona_nz:25122023NZ@initialcluster.szcgpq0.mongodb.net/db-contacts?retryWrites=true&w=majority&appName=InitialCluster";
-
 const app = express();
 
 app.use(morgan("tiny"));
@@ -25,15 +20,6 @@ app.use((err, req, res, next) => {
   res.status(status).json({ message });
 });
 
-// To connect to MpngoDB we need to use method connect and pass string with credentials
-// mongoose.connect returns promise
-mongoose
-  .connect(DB_HOST)
-  .then(() => {
-    app.listen(3000);
-    console.log("Database connection successful");
-  })
-  .catch((error) => {
-    console.log(error.message);
-    process.exit(1);
-  });
+app.listen(3000, () => {
+  console.log("Server is running. Use our API on port: 3000");
+});
