@@ -12,6 +12,7 @@ export const createContactSchema = Joi.object({
     .length(10)
     .pattern(/^\d{3}-?\d{3}-?\d{2}$|^\d{10}$/)
     .required(),
+  favorite: Joi.boolean(),
 });
 
 export const updateContactSchema = Joi.object({
@@ -23,4 +24,9 @@ export const updateContactSchema = Joi.object({
   phone: Joi.string()
     .length(10)
     .pattern(/^\d{3}-?\d{3}-?\d{2}$|^\d{10}$/),
+  favorite: Joi.boolean(),
+});
+
+export const updateFavoriteSchema = Joi.object({
+  favorite: Joi.boolean().required(),
 });
