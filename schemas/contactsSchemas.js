@@ -25,7 +25,11 @@ export const updateContactSchema = Joi.object({
     .length(10)
     .pattern(/^\d{3}-?\d{3}-?\d{2}$|^\d{10}$/),
   favorite: Joi.boolean(),
-});
+})
+  .min(1)
+  .messages({
+    "object.min": "Body must have at least one field",
+  });
 
 export const updateFavoriteSchema = Joi.object({
   favorite: Joi.boolean().required(),
