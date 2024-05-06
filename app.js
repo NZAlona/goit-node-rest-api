@@ -2,6 +2,12 @@ import express from "express";
 import morgan from "morgan";
 import cors from "cors";
 import contactsRouter from "./routes/contactsRouter.js";
+import mongoose from "mongoose";
+import "dotenv/config";
+
+const { DB_HOST } = process.env;
+// process.env enables to see what Environmental variables are available when an applaication was initiated
+// process.env is a global variable which is added during runtime by Node,js to show the state of environment an application was initiated - it requires to install dotenv/config
 
 const app = express();
 
@@ -20,6 +26,14 @@ app.use((err, req, res, next) => {
   res.status(status).json({ message });
 });
 
-app.listen(3000, () => {
-  console.log("Server is running. Use our API on port: 3000");
-});
+// mongoose.connect returns promise
+mongoose
+  .connect(DB_HOST)
+  .then(() => {
+    app.listen(3000);
+    console.log("Database connection successful");
+  })
+  .catch((error) => {
+    console.log(error.message);
+    process.exit(1);
+  });
