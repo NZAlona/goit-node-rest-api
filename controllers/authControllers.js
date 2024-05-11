@@ -47,14 +47,28 @@ async function login(req, res, next) {
       throw HttpError(401, "Email or password is wrong");
 
     const payload = {
-      id: User._id,
+      id: exsistedUser._id,
     };
     // a unique string sent by server after user logged in
     const token = jwt.sign(payload, SECRET_KEY, { expiresIn: "23h" });
+    // when user  is logge in we save token
+
+    await User.findByIdAndUpdate(exsistedUser._id, { token });
     res.json({ token });
   } catch (error) {
     next(error);
   }
 }
 
-export default { register, login };
+async function getCurrent(req, res) {
+  const { email, subscription } = req.user;
+  res.json({ email, subscription });
+}
+
+async function logOut(req, res) {
+  const { _id } = req.user;
+  await User.findByIdAndUpdate(_id, { token: "" });
+
+  res.status(204);
+}
+export default { register, login, getCurrent, logOut };
