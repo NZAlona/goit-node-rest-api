@@ -71,4 +71,13 @@ async function logOut(req, res) {
 
   res.status(204);
 }
-export default { register, login, getCurrent, logOut };
+
+async function updateSubscription(req, res) {
+  const { _id } = req.user;
+  const { subscription } = req.body;
+
+  await User.findByIdAndUpdate({ _id }, { subscription });
+
+  res.json({ subscription });
+}
+export default { register, login, getCurrent, logOut, updateSubscription };
