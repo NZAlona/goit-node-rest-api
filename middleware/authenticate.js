@@ -6,20 +6,20 @@ import { User } from "../models/user.js";
 const { SECRET_KEY } = process.env;
 
 const authenticate = async (req, res, next) => {
-  // Checks if header includes Bearer and valid token
-  const { authorization = "" } = req.headers;
-
-  const [bearer, token] = authorization.split(" ");
-
-  if (bearer !== "Bearer") {
-    next(HttpError(401, "Invalid authorization header"));
-  }
-
   try {
+    // Checks if header includes Bearer and valid token
+    const { authorization = "" } = req.headers;
+
+    const [bearer, token] = authorization.split(" ");
+
+    if (bearer !== "Bearer") {
+      next(HttpError(401, "Invalid authorization header"));
+    }
+    // Verifies JWT token
     const { id } = jwt.verify(token, SECRET_KEY);
-
+    // Checks if user exists in DB
     const userExistsInDb = await User.findById(id);
-
+    // Verifies if the user's token matches the token provided
     if (
       !userExistsInDb ||
       !userExistsInDb.token ||
@@ -28,7 +28,7 @@ const authenticate = async (req, res, next) => {
       next(HttpError(401, "Not authorized"));
     }
 
-    //   To identify user who sends requests
+    //  sets req.user
     req.user = userExistsInDb;
     next();
   } catch {

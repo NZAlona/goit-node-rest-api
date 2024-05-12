@@ -6,10 +6,9 @@ import "dotenv/config";
 
 const { SECRET_KEY } = process.env;
 
-async function register(req, res, next) {
-  const { email, password } = req.body;
-
+export async function register(req, res, next) {
   try {
+    const { email, password } = req.body;
     const exsistedUser = await User.findOne({ email });
 
     if (exsistedUser !== null) throw HttpError(409, "Email in use");
@@ -21,58 +20,62 @@ async function register(req, res, next) {
 
     const user = await User.create({ ...req.body, password: hashPassword });
 
-    res.status(201).json({ user });
+    res
+      .status(201)
+      .json({ user: { email: user.email, subscription: user.subscription } });
   } catch (error) {
     next(error);
   }
 }
 
-async function login(req, res, next) {
-  const { email, password } = req.body;
-
+export async function login(req, res, next) {
   try {
+    const { email, password } = req.body;
     // Checks if we already have in db registered email
-    const exsistedUser = await User.findOne({ email });
+    const user = await User.findOne({ email });
 
-    if (exsistedUser === null)
-      throw HttpError(401, "Email or password is wrong");
+    if (user === null) throw HttpError(401, "Email or password is wrong");
 
     //  If user already registered then compare passwords
-    const comparePassword = await bcrypt.compare(
-      password,
-      exsistedUser.password
-    );
+    const comparePassword = await bcrypt.compare(password, user.password);
 
     if (comparePassword === false)
       throw HttpError(401, "Email or password is wrong");
 
     const payload = {
-      id: exsistedUser._id,
+      id: user._id,
     };
     // a unique string sent by server after user logged in
     const token = jwt.sign(payload, SECRET_KEY, { expiresIn: "23h" });
-    // when user  is logge in we save token
+    // when user  is logged in we save token
 
-    await User.findByIdAndUpdate(exsistedUser._id, { token });
-    res.json({ token });
+    await User.findByIdAndUpdate(user._id, { token });
+    res.json({
+      token,
+      user: {
+        email: user.email,
+        subscription: user.subscription,
+      },
+    });
   } catch (error) {
     next(error);
   }
 }
 
-async function getCurrent(req, res) {
+export async function getCurrent(req, res) {
   const { email, subscription } = req.user;
   res.json({ email, subscription });
 }
 
-async function logOut(req, res) {
+export async function logOut(req, res) {
   const { _id } = req.user;
+
   await User.findByIdAndUpdate(_id, { token: "" });
 
-  res.status(204);
+  res.status(204).send();
 }
 
-async function updateSubscription(req, res) {
+export async function updateSubscription(req, res) {
   const { _id } = req.user;
   const { subscription } = req.body;
 
@@ -80,4 +83,3 @@ async function updateSubscription(req, res) {
 
   res.json({ subscription });
 }
-export default { register, login, getCurrent, logOut, updateSubscription };
