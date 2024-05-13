@@ -79,7 +79,7 @@ export async function updateSubscription(req, res) {
   const { _id } = req.user;
   const { subscription } = req.body;
 
-  await User.findByIdAndUpdate({ _id }, { subscription });
+  await User.findByIdAndUpdate(_id, { subscription });
 
   res.json({ subscription });
 }
