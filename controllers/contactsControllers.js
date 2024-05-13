@@ -33,7 +33,7 @@ export const getOneContact = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { _id: owner } = req.user;
-    const contact = await Contact.findById(id, { owner });
+    const contact = await Contact.findById({ _id: id, owner });
 
     if (!contact) throw HttpError(404, "Not Found");
 
@@ -73,7 +73,7 @@ export const updateContact = async (req, res, next) => {
     const { _id: owner } = req.user;
     const updatedContact = await Contact.findByIdAndUpdate(
       id,
-      { ...req.body, owner },
+      { ...req.body, _id: id, owner },
       {
         new: true,
       }
@@ -93,7 +93,7 @@ export const updateStatusContact = async (req, res, next) => {
     const { _id: owner } = req.user;
     const updatedStatusContact = await Contact.findByIdAndUpdate(
       id,
-      { ...req.body, owner },
+      { ...req.body, _id: id, owner },
       {
         new: true,
       }
