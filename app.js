@@ -2,12 +2,13 @@ import express from "express";
 import morgan from "morgan";
 import cors from "cors";
 import contactsRouter from "./routes/contactsRouter.js";
+import authRouter from "./routes/auth.js";
 import mongoose from "mongoose";
 import "dotenv/config";
 
 const { DB_HOST } = process.env;
 // process.env enables to see what Environmental variables are available when an applaication was initiated
-// process.env is a global variable which is added during runtime by Node,js to show the state of environment an application was initiated - it requires to install dotenv/config
+// process.env is a global variable which is added during runtime by Node,js to show the state of environment an application was initiated - it requires to install dotenv/config loads envir variabl from .env file into process.env
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api/contacts", contactsRouter);
+app.use("/api/users", authRouter);
 
 app.use((_, res) => {
   res.status(404).json({ message: "Route not found" });
