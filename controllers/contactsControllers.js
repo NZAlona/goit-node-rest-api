@@ -2,13 +2,14 @@ import HttpError from "../helpers/HttpError.js";
 import { Contact } from "../models/contact.js";
 import ctrlWrapper from "../decorator/ctrlWrapper.js";
 
-const getAllContacts = async (req, res, next) => {
+const getAllContacts = async (req, res) => {
   // To return all items that were created/updated by specific user
   const { _id: owner } = req.user;
 
   // Pagination --> req.query
   const { page = 1, limit = 20, favorite } = req.query;
 
+  // Check up on if request sends but query param favorite is omitted - theb resp is still sent but favorite is specified by default false.
   let filter = { owner, favorite };
 
   if (favorite === undefined) {
@@ -26,17 +27,17 @@ const getAllContacts = async (req, res, next) => {
   res.json(contacts);
 };
 
-const getOneContact = async (req, res, next) => {
+const getOneContact = async (req, res) => {
   const { id } = req.params;
   const { _id: owner } = req.user;
-  const contact = await Contact.findById({ _id: id, owner });
+  const contact = await Contact.findOne({ _id: id, owner });
 
   if (!contact) throw HttpError(404, "Not Found");
 
   res.json(contact);
 };
 
-const deleteContact = async (req, res, next) => {
+const deleteContact = async (req, res) => {
   const { id } = req.params;
   const { _id: owner } = req.user;
   const deletedContact = await Contact.findOneAndDelete({ _id: id, owner });
@@ -46,18 +47,18 @@ const deleteContact = async (req, res, next) => {
   res.json(deletedContact);
 };
 
-const createContact = async (req, res, next) => {
+const createContact = async (req, res) => {
   const { _id: owner } = req.user;
   const createdContact = await Contact.create({ ...req.body, owner });
   res.status(201).json(createdContact);
 };
 
-const updateContact = async (req, res, next) => {
+const updateContact = async (req, res) => {
   const { id } = req.params;
   const { _id: owner } = req.user;
-  const updatedContact = await Contact.findByIdAndUpdate(
-    id,
-    { ...req.body, _id: id, owner },
+  const updatedContact = await Contact.findOneAndUpdate(
+    { _id: id, owner },
+    req.body,
     {
       new: true,
     }
@@ -71,9 +72,9 @@ const updateContact = async (req, res, next) => {
 const updateStatusContact = async (req, res, next) => {
   const { id } = req.params;
   const { _id: owner } = req.user;
-  const updatedStatusContact = await Contact.findByIdAndUpdate(
-    id,
-    { ...req.body, _id: id, owner },
+  const updatedStatusContact = await Contact.findOneAndUpdate(
+    { _id: id, owner },
+    req.body,
     {
       new: true,
     }
