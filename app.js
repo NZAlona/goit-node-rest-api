@@ -5,6 +5,7 @@ import contactsRouter from "./routes/contactsRouter.js";
 import authRouter from "./routes/auth.js";
 import mongoose from "mongoose";
 import "dotenv/config";
+import multer from "multer";
 
 const { DB_HOST } = process.env;
 // process.env enables to see what Environmental variables are available when an applaication was initiated
@@ -18,6 +19,7 @@ app.use(express.json());
 
 app.use("/api/contacts", contactsRouter);
 app.use("/api/users", authRouter);
+app.use("/avatars", authRouter);
 
 app.use((_, res) => {
   res.status(404).json({ message: "Route not found" });

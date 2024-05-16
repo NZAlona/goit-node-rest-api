@@ -4,6 +4,8 @@ import ctrlWrapper from "../decorator/ctrlWrapper.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import "dotenv/config";
+import * as fs from "node:fs/promises";
+import path from "node:path";
 
 const { SECRET_KEY } = process.env;
 
@@ -77,10 +79,31 @@ async function updateSubscription(req, res) {
   res.json({ subscription });
 }
 
+async function updateAvatar(req, res) {
+  // console.log(req.file)
+  await fs.rename(
+    req.file.path,
+    path.resolve("public/avatars", req.file.filename)
+  );
+
+  const user = await User.findByIdAndUpdate(
+    req.user.id,
+    { avatarURL: req.file.filename },
+    { new: true }
+  );
+
+  if (user === null) {
+    return res.status(401).send({ message: "Not authorized" });
+  }
+
+  res.json({ avatarURL: user.avatarURL });
+}
+
 export default {
   register: ctrlWrapper(register),
   login: ctrlWrapper(login),
   logOut: ctrlWrapper(logOut),
   updateSubscription: ctrlWrapper(updateSubscription),
   getCurrent: ctrlWrapper(getCurrent),
+  updateAvatar: ctrlWrapper(updateAvatar),
 };
