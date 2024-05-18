@@ -5,6 +5,7 @@ import contactsRouter from "./routes/contactsRouter.js";
 import authRouter from "./routes/auth.js";
 import mongoose from "mongoose";
 import "dotenv/config";
+import path from "node:path";
 
 const { DB_HOST } = process.env;
 // process.env enables to see what Environmental variables are available when an applaication was initiated
@@ -15,6 +16,8 @@ const app = express();
 app.use(morgan("tiny"));
 app.use(cors());
 app.use(express.json());
+
+app.use("/avatars", express.static(path.resolve("public/avatars")));
 
 app.use("/api/contacts", contactsRouter);
 app.use("/api/users", authRouter);

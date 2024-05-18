@@ -4,6 +4,10 @@ import ctrlWrapper from "../decorator/ctrlWrapper.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import "dotenv/config";
+import * as fs from "node:fs/promises";
+import path from "node:path";
+import gravatar from "gravatar";
+import Jimp from "jimp";
 
 const { SECRET_KEY } = process.env;
 
@@ -16,9 +20,15 @@ async function register(req, res, next) {
   // Password hashing can be done by using bcrypt library and salt concept(unique random string)
   const hashPassword = await bcrypt.hash(password, 10);
 
-  // to add user in MongoDB we need need to invoke method create in model, then using spread oper(makes a copy of all values and replace passwaord value )
+  // Create temporary avatar - variable name should be the same as specified in schema
+  const avatarURL = gravatar.url(email);
 
-  const user = await User.create({ ...req.body, password: hashPassword });
+  // to add user in MongoDB we need need to invoke method create in model, then using spread oper(makes a copy of all values and replace passwaord value )
+  const user = await User.create({
+    ...req.body,
+    password: hashPassword,
+    avatarURL,
+  });
 
   res
     .status(201)
@@ -77,10 +87,34 @@ async function updateSubscription(req, res) {
   res.json({ subscription });
 }
 
+async function updateAvatar(req, res) {
+  const resizeAvatar = await Jimp.read(req.file.path);
+  resizeAvatar.resize(250, 250).write(path.resolve(req.file.path));
+
+  // console.log(req.file)
+  await fs.rename(
+    req.file.path,
+    path.resolve("public/avatars", req.file.filename)
+  );
+
+  const user = await User.findByIdAndUpdate(
+    req.user.id,
+    { avatarURL: req.file.filename },
+    { new: true }
+  );
+
+  if (user === null) {
+    return res.status(401).send({ message: "Not authorized" });
+  }
+
+  res.json({ avatarURL: user.avatarURL });
+}
+
 export default {
   register: ctrlWrapper(register),
   login: ctrlWrapper(login),
   logOut: ctrlWrapper(logOut),
   updateSubscription: ctrlWrapper(updateSubscription),
   getCurrent: ctrlWrapper(getCurrent),
+  updateAvatar: ctrlWrapper(updateAvatar),
 };
