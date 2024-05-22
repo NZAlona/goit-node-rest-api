@@ -22,3 +22,14 @@ export const loginSchema = Joi.object({
   password: Joi.string().min(5).required(),
   token: Joi.string(),
 });
+
+export const emailSchema = Joi.object({
+  email: Joi.string()
+    .email({
+      minDomainSegments: 2,
+      tlds: { allow: ["com", "net", "ru", "uk"] },
+    })
+    .required(),
+}).messages({
+  "any.required": "missing required field email",
+});

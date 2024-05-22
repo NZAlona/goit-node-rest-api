@@ -6,6 +6,7 @@
     "dev": "nodemon ./app.js"
   },
   "dependencies": {
+    "@sendgrid/mail": "^8.1.3",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
@@ -20,5 +21,19 @@
   },
   "devDependencies": {
     "nodemon": "^3.0.2"
-  }
+  },
+  "version": "1.0.0",
+  "main": "app.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NZAlona/goit-node-rest-api.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/NZAlona/goit-node-rest-api/issues"
+  },
+  "homepage": "https://github.com/NZAlona/goit-node-rest-api#readme",
+  "description": ""
 }
