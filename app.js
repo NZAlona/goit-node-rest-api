@@ -2,7 +2,7 @@ import express from "express";
 import morgan from "morgan";
 import cors from "cors";
 import contactsRouter from "./routes/contactsRouter.js";
-import authRouter from "./routes/auth.js";
+import authRouter from "./routes/usersRouter.js";
 import mongoose from "mongoose";
 import "dotenv/config";
 import path from "node:path";

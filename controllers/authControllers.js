@@ -1,5 +1,6 @@
 import { User } from "../models/user.js";
 import HttpError from "../helpers/HttpError.js";
+import sendEmail from "../helpers/sendEmail.js";
 import ctrlWrapper from "../decorator/ctrlWrapper.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -8,10 +9,11 @@ import * as fs from "node:fs/promises";
 import path from "node:path";
 import gravatar from "gravatar";
 import Jimp from "jimp";
+import crypto from "node:crypto";
 
 const { SECRET_KEY } = process.env;
 
-async function register(req, res, next) {
+async function register(req, res) {
   const { email, password } = req.body;
   const exsistedUser = await User.findOne({ email });
 
@@ -23,24 +25,82 @@ async function register(req, res, next) {
   // Create temporary avatar - variable name should be the same as specified in schema
   const avatarURL = gravatar.url(email);
 
+  // Create verification token
+  const verificationToken = crypto.randomUUID();
+
   // to add user in MongoDB we need need to invoke method create in model, then using spread oper(makes a copy of all values and replace passwaord value )
   const user = await User.create({
     ...req.body,
     password: hashPassword,
     avatarURL,
+    verificationToken,
   });
+
+  //  Create email to confirm/verify by recipient
+  const verifyEmail = {
+    to: email,
+    subject: "Verify your Email",
+
+    html: `<p>Hi there. To access your account, you'll need to verify your email address. Please click on the following <a style="color: blue" target="_blank" href="http://localhost:3000/api/users/verify/${verificationToken}">link</a> </p>`,
+
+    text: "Hi there. To access your account, you'll need to verify your email address. Please follow these steps: Copy the following link: http://localhost:3000/api/users/verify/${verificationToken} and paste it into your browser's address bar.",
+  };
+
+  await sendEmail(verifyEmail);
 
   res
     .status(201)
     .json({ user: { email: user.email, subscription: user.subscription } });
 }
 
-async function login(req, res, next) {
+async function verifyEmail(req, res) {
+  const { verificationToken } = req.params;
+
+  const user = await User.findOne({ verificationToken });
+
+  if (!user) throw HttpError(404, "User not found");
+
+  await User.findOneAndUpdate(user._id, {
+    verify: true,
+    verificationToken: null,
+  });
+
+  res.json({ message: "Verification successful" });
+}
+
+async function resendEmail(req, res) {
+  const { email } = req.body;
+  const user = await User.findOne({ email });
+
+  if (!user) throw HttpError(404, "User not found");
+
+  if (user.verify) throw HttpError(400, "Verification has already been passed");
+
+  //  Create email to confirm/verify by recipient
+  const verifyEmail = {
+    to: email,
+    subject: "Verify your Email",
+
+    html: `<p>Hi there. To access your account, you'll need to verify your email address. Please click on the following <a style="color: blue" target="_blank" href="http://localhost:3000/api/users/verify/${user.verificationToken}">link</a> </p>`,
+
+    text: "Hi there. To access your account, you'll need to verify your email address. Please follow these steps: Copy the following link: http://localhost:3000/api/users/verify/${verificationToken} and paste it into your browser's address bar.",
+  };
+
+  await sendEmail(verifyEmail);
+
+  res.json({ message: "Verification email sent" });
+}
+
+async function login(req, res) {
   const { email, password } = req.body;
   // Checks if we already have in db registered email
   const user = await User.findOne({ email });
 
   if (user === null) throw HttpError(401, "Email or password is wrong");
+
+  // Check if user verified his email
+  if (user.verify === false)
+    throw HttpError(401, "Email has not been verified");
 
   //  If user already registered then compare passwords
   const comparePassword = await bcrypt.compare(password, user.password);
@@ -112,6 +172,8 @@ async function updateAvatar(req, res) {
 
 export default {
   register: ctrlWrapper(register),
+  verifyEmail: ctrlWrapper(verifyEmail),
+  resendEmail: ctrlWrapper(resendEmail),
   login: ctrlWrapper(login),
   logOut: ctrlWrapper(logOut),
   updateSubscription: ctrlWrapper(updateSubscription),
