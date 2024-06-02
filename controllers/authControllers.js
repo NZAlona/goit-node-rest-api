@@ -2,7 +2,7 @@ import { User } from "../models/user.js";
 import HttpError from "../helpers/HttpError.js";
 import sendEmail from "../helpers/sendEmail.js";
 import ctrlWrapper from "../decorator/ctrlWrapper.js";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import "dotenv/config";
 import * as fs from "node:fs/promises";
